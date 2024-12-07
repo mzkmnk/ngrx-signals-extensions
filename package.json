@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "fix:biome": "npx @biomejs/biome format --write /src/**"
+    "fix:biome": "npx @biomejs/biome format --write ./src"
   },
   "private": true,
   "dependencies": {
