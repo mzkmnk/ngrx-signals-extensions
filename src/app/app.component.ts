@@ -4,9 +4,9 @@ import { RouterOutlet } from '@angular/router';
 @Component({
 	selector: 'app-root',
 	imports: [RouterOutlet],
-  template:`
+	template: `
     <router-outlet></router-outlet>
-  `
+  `,
 })
 export class AppComponent {
 	title = 'ngrx-signals-extensions';
