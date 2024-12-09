@@ -1,7 +1,6 @@
 import { effect } from '@angular/core';
 import { tapResponse } from '@ngrx/operators';
 import {
-	getState,
 	patchState,
 	signalStoreFeature,
 	withHooks,
@@ -9,14 +8,14 @@ import {
 	withState,
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { Observable, pipe, switchMap, tap } from 'rxjs';
+import { type Observable, pipe, switchMap, tap } from 'rxjs';
 
 export type TWithServerSyncOptions = {
 	autoSyncOnChange: boolean;
 };
 
 export type TWithServerSyncState = {
-	error:unknown,
+	error: unknown;
 	data: unknown;
 	loading: boolean;
 };
@@ -24,36 +23,37 @@ export type TWithServerSyncState = {
 export function withServerSync({
 	queryFn,
 	options,
-}: { queryFn:() => Observable<unknown> ,options?: TWithServerSyncOptions }) {
+}: { queryFn: () => Observable<unknown>; options?: TWithServerSyncOptions }) {
 	return signalStoreFeature(
-		withState<TWithServerSyncState>({ data: undefined,error:undefined, loading: false }),
+		withState<TWithServerSyncState>({
+			data: undefined,
+			error: undefined,
+			loading: false,
+		}),
 
 		withMethods((store) => {
-
-			const query = rxMethod<{}>(
+			const query = rxMethod(
 				pipe(
-					tap(() => patchState(store,{loading:true})),
+					tap(() => patchState(store, { loading: true })),
 					switchMap(() => {
 						return queryFn().pipe(
 							tapResponse({
-								next:(data) => {
-									patchState(store,{data})
+								next: (data) => {
+									patchState(store, { data });
 								},
-								error:(error) => {
-									patchState(store,{error})
+								error: (error) => {
+									patchState(store, { error });
 								},
-								finalize:() => {
-									patchState(store,{loading:false})
-								}
-							})
-						)
-					})
-				)
-			)
+								finalize: () => {
+									patchState(store, { loading: false });
+								},
+							}),
+						);
+					}),
+				),
+			);
 
-			const mutation = rxMethod(
-				pipe()
-			)
+			const mutation = rxMethod(pipe());
 
 			return {
 				query,
@@ -63,7 +63,7 @@ export function withServerSync({
 
 		withHooks({
 			onInit(store): void {
-				store.query({})
+				store.query({});
 
 				if (options?.autoSyncOnChange) {
 					effect(() => {

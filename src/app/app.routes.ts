@@ -8,10 +8,13 @@ export const routes: Routes = [
 				(M) => M.WithStorageSyncComponent,
 			),
 	},
-  {
-    path:'with-server-sync',
-    loadComponent: () => import('./pages/with-server-sync/with-server-sync.component').then(M => M.WithServerSyncComponent),
-  },
+	{
+		path: 'with-server-sync',
+		loadComponent: () =>
+			import('./pages/with-server-sync/with-server-sync.component').then(
+				(M) => M.WithServerSyncComponent,
+			),
+	},
 	{
 		path: '**',
 		redirectTo: 'with-server-sync',
