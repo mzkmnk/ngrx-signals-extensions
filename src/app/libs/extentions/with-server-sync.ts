@@ -1,5 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { effect, inject } from '@angular/core';
+import { effect } from '@angular/core';
 import { tapResponse } from '@ngrx/operators';
 import {
 	getState,
@@ -10,52 +9,61 @@ import {
 	withState,
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap } from 'rxjs';
+import { Observable, pipe, switchMap, tap } from 'rxjs';
 
 export type TWithServerSyncOptions = {
 	autoSyncOnChange: boolean;
 };
 
 export type TWithServerSyncState = {
-	data: object;
+	error:unknown,
+	data: unknown;
 	loading: boolean;
 };
 
 export function withServerSync({
-	endpoint,
-	method,
+	queryFn,
 	options,
-}: { endpoint: string; method: string; options?: TWithServerSyncOptions }) {
+}: { queryFn:() => Observable<unknown> ,options?: TWithServerSyncOptions }) {
 	return signalStoreFeature(
-		withState<TWithServerSyncState>({ data: {}, loading: false }),
+		withState<TWithServerSyncState>({ data: undefined,error:undefined, loading: false }),
 
-		withMethods((store, [http] = [inject(HttpClient)]) => {
-			const initializeFromServer = rxMethod(
+		withMethods((store) => {
+
+			const query = rxMethod<{}>(
 				pipe(
-					tap(() => patchState(store, { loading: true })),
+					tap(() => patchState(store,{loading:true})),
 					switchMap(() => {
-						return http.request(method, endpoint).pipe(
+						return queryFn().pipe(
 							tapResponse({
-								next: (data) => {
-									patchState(store, { data, loading: false });
+								next:(data) => {
+									patchState(store,{data})
 								},
-								error: () => {
-									// todo
+								error:(error) => {
+									patchState(store,{error})
 								},
-							}),
-						);
-					}),
-				),
-			);
+								finalize:() => {
+									patchState(store,{loading:false})
+								}
+							})
+						)
+					})
+				)
+			)
+
+			const mutation = rxMethod(
+				pipe()
+			)
 
 			return {
-				initializeFromServer,
+				query,
+				mutation,
 			};
 		}),
 
 		withHooks({
 			onInit(store): void {
-				store.initializeFromServer({});
+				store.query({})
 
 				if (options?.autoSyncOnChange) {
 					effect(() => {

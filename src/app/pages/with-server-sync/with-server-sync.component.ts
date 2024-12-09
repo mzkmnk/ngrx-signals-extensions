@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, computed, effect, inject} from '@angular/core';
 import {PostStore} from './post.store';
 
 @Component({
@@ -13,4 +13,6 @@ import {PostStore} from './post.store';
 export class WithServerSyncComponent {
 
   private readonly postStore = inject(PostStore);
+
+  readonly posts = this.postStore.posts;
 }
